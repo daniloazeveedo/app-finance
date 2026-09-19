@@ -1,0 +1,402 @@
+:root{
+  --preto:#080808; --fundo:#0C0C0C; --cartao:#141414; --cartao2:#1B1B1B;
+  --linha:#232323; --texto:#FFFFFF; --cinza:#838383;
+  --amarelo:#F9D16B; --amarelo2:#FAFDA6; --indigo:#313179;
+  --teal:#57BF9C; --lilas:#C09FF8; --laranja:#E8A15A; --vermelho:#E4736B;
+  --acento:#F9D16B; --aro:rgba(255,255,255,.06); --sutil:rgba(255,255,255,.03);
+  --cartaoAtras:rgba(255,255,255,.15); --orbita:rgba(255,255,255,.28);
+  --telaFundo:linear-gradient(140deg,#4A5666 0%,#2E3742 58%,#222932 100%);
+  color-scheme:light dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --preto:#F1F3F5; --fundo:#FFFFFF; --cartao:#FFFFFF; --cartao2:#F0F3F5;
+    --texto:#101A21; --cinza:#5D6D77; --linha:#E1E6EA;
+    --teal:#1B7A5A; --lilas:#7A50C7; --laranja:#AC6A1B; --vermelho:#BE3B30;
+    --acento:#8A6410; --aro:rgba(16,26,33,.08); --sutil:rgba(16,26,33,.03);
+    --cartaoAtras:rgba(16,26,33,.12); --orbita:rgba(126,136,156,.55);
+    --telaFundo:linear-gradient(140deg,#D7DDE4 0%,#C3CBD4 58%,#B4BDC7 100%);
+  }
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; background:var(--preto); color:var(--texto);
+  font-family:Mulish,Avenir,"Avenir Next",system-ui,-apple-system,sans-serif;
+  font-size:15px; line-height:1.45; font-weight:400;
+  -webkit-font-smoothing:antialiased; font-feature-settings:"tnum" 1;
+}
+.app{max-width:430px; margin:0 auto; min-height:100vh; padding:0 20px 130px; background:var(--preto)}
+h1,h2,h3{margin:0; font-weight:600; letter-spacing:-.015em}
+button{font:inherit; color:inherit; cursor:pointer; font-family:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--amarelo); outline-offset:2px}
+.rot{color:var(--cinza); font-size:14px; font-weight:400}
+.num{font-variant-numeric:tabular-nums}
+.tela{display:none} .tela.on{display:block}
+.oculto{display:none !important}
+
+/* topo */
+.topo{display:flex; align-items:center; justify-content:space-between; padding:18px 0 22px}
+.iconeBtn{background:none; border:0; padding:8px; margin:-8px; display:grid; place-items:center;
+  border-radius:12px}
+.iconeBtn svg{display:block}
+.sino{position:relative}
+.sino .ponto{position:absolute; top:3px; right:5px; width:10px; height:10px; border-radius:50%;
+  background:var(--vermelho); border:2px solid var(--preto)}
+#mesAtual{text-transform:lowercase}
+
+/* SVG que segue o tema */
+.iconeBtn svg path, .circBtn svg path, .topoTela .iconeBtn svg path{fill:var(--texto)}
+.cartaoAtras path{fill:var(--cartaoAtras); fill-opacity:1}
+.orbitaSvg{stroke:var(--orbita); stroke-opacity:1}
+.eixo{fill:var(--cinza)}
+.gradeFluxo{stroke:var(--aro); stroke-opacity:1}
+.linhaFluxo{stroke:var(--acento)}
+.corAcento{stop-color:var(--acento)}
+.corAcento2{stop-color:var(--amarelo2)}
+@media (prefers-color-scheme: light){ .corAcento2{stop-color:var(--acento)} }
+
+/* menu lateral */
+.drawer{position:fixed; inset:0; z-index:55; max-width:430px; margin:0 auto;
+  background:rgba(8,8,8,.72)}
+.drawerPainel{position:absolute; left:0; top:0; bottom:0; width:72%; background:var(--cartao);
+  border-right:1px solid var(--linha); padding:calc(26px + env(safe-area-inset-top,0px)) 16px 20px;
+  display:flex; flex-direction:column; gap:4px}
+.drawerPainel .tit{font-size:17px; font-weight:800; margin-bottom:14px; padding-left:12px}
+.drawerPainel button{background:none; border:0; text-align:left; padding:13px 12px; border-radius:12px;
+  font-size:15px; font-weight:500; color:var(--texto)}
+.drawerPainel button:hover{background:var(--cartao2)}
+
+/* saldo */
+.saldoRot{font-size:15px; color:var(--cinza); margin-bottom:4px}
+.saldoVal{font-size:40px; font-weight:800; letter-spacing:-.03em; line-height:1.1;
+  font-variant-numeric:tabular-nums}
+.saldoVal .cent{font-size:22px; font-weight:600}
+.saldoVal.neg{color:var(--vermelho)}
+.saldoSub{font-size:13.5px; color:var(--cinza); margin-top:8px; line-height:1.4}
+
+/* ações */
+.acoes{position:relative; width:100%; aspect-ratio:381/68; margin:20px 0 26px;
+  container-type:inline-size}
+.acoesFundo{position:absolute; inset:0; width:100%; height:100%; display:block}
+.acao{position:absolute; top:0; height:100%; width:50%; background:none; border:0; padding:0 0 0 2.62%;
+  display:flex; align-items:center; gap:2.5%; color:#101010; font-weight:600; font-size:4cqw}
+.acao.esq{left:0} .acao.dir{right:0}
+.acao .lbl{flex:1; text-align:center; padding-right:9%}
+.bolo{width:12.6cqw; aspect-ratio:1; border-radius:50%; background:#080808; flex:none;
+  display:grid; place-items:center}
+.bolo svg{width:34%; height:auto; display:block}
+.bolo.gira{transform:rotate(180deg)}
+
+/* seções */
+.sec{margin-top:26px}
+.secCab{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px}
+.secCab h2{font-size:15px; color:var(--cinza); font-weight:400}
+.verTodos{position:relative; color:var(--acento); background:none; border:0; padding:0 0 4px;
+  font-size:13px; font-weight:600}
+.verTodos::after{content:""; position:absolute; left:0; right:0; bottom:0; height:1px;
+  background:currentColor}
+
+/* cartão de meta */
+.pilha{position:relative; padding-top:24px}
+.cartaoAtras{position:absolute; top:0; left:5%; width:90%; height:auto; display:block}
+.cartaoMeta{position:relative; aspect-ratio:373/180; container-type:inline-size}
+.cartaoFundo{position:absolute; inset:0; width:100%; height:100%; display:block}
+.cartaoConteudo{position:absolute; inset:0; padding:7% 7% 8%; display:flex; flex-direction:column;
+  justify-content:space-between}
+.cartaoMeta .cab{display:flex; justify-content:space-between; align-items:flex-start; gap:10px}
+.cartaoMeta .nome{font-size:4.6cqw; font-weight:600}
+.cartaoMeta .pct{font-size:7cqw; font-weight:800; line-height:1}
+.cartaoMeta .alvo{font-size:3.5cqw; color:rgba(255,255,255,.72)}
+.cartaoMeta .falta{font-size:3.5cqw; color:rgba(255,255,255,.85); margin-bottom:2.5%}
+.acoesMeta{display:flex; gap:8px; margin-top:12px}
+.barra{height:8px; border-radius:99px; background:rgba(255,255,255,.16); overflow:hidden}
+.barra span{display:block; height:100%; border-radius:99px;
+  background:linear-gradient(90deg,var(--amarelo),var(--amarelo2))}
+.acoesMeta{display:flex; gap:8px; margin-top:12px}
+
+/* linhas de transação */
+.trans{display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:16px;
+  margin-bottom:10px; color:#101010; font-weight:600}
+.trans i{width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,.14);
+  display:grid; place-items:center; flex:none; font-size:15px}
+.trans .corpo{flex:1; min-width:0}
+.trans .t{font-size:14.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.trans .s{font-size:11.5px; font-weight:500; opacity:.7}
+.trans .v{font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; font-size:14.5px}
+.trans .x{background:rgba(0,0,0,.12); border:0; border-radius:8px; width:24px; height:24px;
+  line-height:1; font-size:15px; color:#101010; flex:none}
+
+/* lista escura (compromissos) */
+.item{display:flex; align-items:center; gap:12px; background:var(--cartao); border-radius:16px;
+  padding:14px 16px; margin-bottom:10px; border:1px solid var(--linha)}
+.item .corpo{flex:1; min-width:0}
+.item .t{font-size:14.5px; font-weight:600}
+.item .s{font-size:12px; color:var(--cinza); margin-top:2px}
+.item .v{font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap}
+.marca-st{font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; display:inline-block}
+.st-atraso{background:rgba(228,115,107,.16); color:var(--vermelho)}
+.st-hoje{background:rgba(249,209,107,.16); color:var(--amarelo)}
+.st-ok{background:rgba(87,191,156,.16); color:var(--teal)}
+.st-futuro{background:rgba(131,131,131,.16); color:var(--cinza)}
+.mini{background:var(--cartao2); border:1px solid var(--linha); border-radius:10px;
+  padding:7px 11px; font-size:12.5px; font-weight:600; color:var(--texto); flex:none}
+.mini.claro{background:rgba(255,255,255,.14); border-color:transparent; color:#fff}
+
+/* análise */
+.topoTela{display:flex; align-items:center; justify-content:space-between; padding:6px 0 12px}
+.topoTela h1{font-size:17px; font-weight:600}
+.topoTela .esp{width:24px}
+.dataAnalise{font-size:13px; color:var(--cinza); text-transform:lowercase}
+.radar{display:block; width:100%; height:auto; max-width:342px; margin:4px auto 0}
+.radar .aro{fill:none; stroke:var(--aro); stroke-width:4}
+.radar .fatia{fill:none; stroke-linecap:butt}
+.radar .brilho{filter:url(#fBrilho); opacity:.55}
+.divisor{border:0; height:1px; background:var(--linha); margin:20px 0 18px}
+.circBtn{width:48px; height:48px; border-radius:50%; background:var(--aro); border:0;
+  display:grid; place-items:center; flex:none}
+.atalhoAnalise{width:100%; margin-top:26px; display:flex; align-items:center; justify-content:space-between;
+  gap:12px; background:var(--cartao); border:1px solid var(--linha); border-radius:20px; padding:16px 18px;
+  text-align:left}
+.atalhoAnalise .g{display:block}
+.legenda{margin-top:4px}
+.legenda .l{display:flex; align-items:center; gap:10px; padding:5px 0; font-size:14px}
+.legenda .l b{width:9px; height:9px; border-radius:50%; flex:none}
+.legenda .l span{flex:1; color:var(--texto); font-weight:400}
+.legenda .l em{font-style:normal; font-weight:700; font-variant-numeric:tabular-nums; font-size:13.5px}
+.totalMes{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px}
+.totalMes .g{font-size:26px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.02em}
+
+/* vazio */
+.vazio{background:var(--cartao); border:1px dashed var(--linha); border-radius:16px;
+  padding:20px 16px; color:var(--cinza); font-size:13.5px}
+
+/* formulários */
+form{background:var(--cartao); border:1px solid var(--linha); border-radius:20px; padding:16px;
+  margin-bottom:16px}
+.linha{display:flex; gap:10px; margin-bottom:10px}
+.campo{flex:1; min-width:0}
+label{display:block; font-size:12px; color:var(--cinza); margin-bottom:4px}
+input,select,textarea{width:100%; padding:11px 12px; border:1px solid var(--linha); border-radius:12px;
+  background:var(--cartao2); color:var(--texto); font:inherit; font-family:inherit}
+textarea{resize:vertical}
+.btn{width:100%; padding:13px; border:0; border-radius:99px; font-weight:700; font-size:14.5px;
+  background:linear-gradient(100deg,var(--amarelo),var(--amarelo2)); color:#101010; margin-top:4px}
+.btn.sec{background:var(--cartao2); color:var(--texto); border:1px solid var(--linha)}
+
+/* agente */
+.chat{display:flex; flex-direction:column; gap:10px; margin-bottom:16px}
+.bolha{padding:12px 14px; border-radius:16px; max-width:88%; white-space:pre-wrap; font-size:14.5px;
+  line-height:1.5}
+.bolha.eu{align-self:flex-end; background:linear-gradient(100deg,var(--amarelo),var(--amarelo2));
+  color:#101010; border-bottom-right-radius:6px; font-weight:500}
+.bolha.ele{align-self:flex-start; background:var(--cartao); border:1px solid var(--linha);
+  border-bottom-left-radius:6px}
+.sugs{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px}
+.sug{background:var(--cartao); border:1px solid var(--linha); border-radius:99px; padding:8px 14px;
+  font-size:12.5px; color:var(--texto)}
+.aviso{font-size:11.5px; color:var(--cinza); margin-top:12px; line-height:1.5}
+
+/* moldura do aparelho */
+.shell{position:relative; width:100%; max-width:430px; margin:0 auto; background:var(--preto)}
+@media (min-width:640px) and (min-height:700px){
+  body{min-height:100vh; display:grid; place-items:center; padding:24px 0;
+    background:var(--telaFundo)}
+  .shell{height:min(932px, calc(100vh - 48px)); border-radius:60px; overflow:hidden;
+    box-shadow:0 34px 80px rgba(0,0,0,.5)}
+  .app{height:100%; min-height:0; overflow-y:auto; scrollbar-width:none}
+  .app::-webkit-scrollbar{display:none}
+  .onb{position:absolute; max-width:none}
+  nav{position:absolute; left:0; transform:none; width:100%}
+}
+
+/* tela inicial */
+.onb{position:fixed; inset:0; z-index:60; background:var(--preto); max-width:430px; margin:0 auto;
+  display:flex; flex-direction:column;
+  padding:calc(24px + env(safe-area-inset-top,0px)) 0 env(safe-area-inset-bottom,0px)}
+.onbTopo{flex:1 1 auto; min-height:0; display:grid; place-items:center; padding:0 24px}
+.onbTit{font-size:34px; line-height:1.16; text-align:center; font-weight:500; letter-spacing:-.02em}
+.onbTit span{display:block; color:var(--acento); font-weight:800}
+.onbArte{position:relative; flex:none; width:100%; aspect-ratio:430/699; max-height:75%}
+.onbArte .arte{display:block; width:100%; height:100%}
+.onbBtn{position:absolute; border:0; border-radius:50%; background:transparent; padding:0}
+.onbBtn:focus-visible{outline:3px solid #fff; outline-offset:4px}
+body.onbAtivo{overflow:hidden}
+body.onbAtivo nav{display:none}
+@media (min-width:640px) and (min-height:700px){
+  .onb,.drawer{position:absolute; max-width:none; margin:0}
+}
+
+/* navegação */
+nav{position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:min(100%,430px);
+  display:flex; background:var(--fundo); border-top:1px solid var(--linha);
+  padding:10px 8px calc(10px + env(safe-area-inset-bottom,0px))}
+nav button{flex:1; background:none; border:0; padding:5px 2px; font-size:10.5px; color:var(--cinza);
+  display:flex; flex-direction:column; align-items:center; gap:4px; border-radius:12px; font-weight:500}
+nav button[aria-current="page"]{color:var(--acento); font-weight:700}
+nav svg{width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.7;
+  stroke-linecap:round; stroke-linejoin:round}
+@media (prefers-reduced-motion:no-preference){
+  .bolha{animation:sobe .18s ease-out}
+  .donut circle{transition:stroke-dasharray .4s ease}
+}
+@keyframes sobe{from{opacity:0; transform:translateY(4px)}to{opacity:1; transform:none}}
+
+/* ===== dashboard (web) ===== */
+@media (min-width:1100px){
+  body{display:block; padding:0; background:var(--preto); min-height:100vh}
+  .shell{max-width:none; width:auto; height:auto; margin:0 0 0 232px; border-radius:0;
+    overflow:visible; box-shadow:none}
+  .app{max-width:1560px; height:auto; min-height:0; overflow:visible; margin:0 auto;
+    padding:0 36px 48px}
+  .onb,.drawer{display:none !important}
+
+  nav{position:fixed; left:0; top:0; bottom:0; width:232px; transform:none;
+    flex-direction:column; justify-content:flex-start; gap:4px; padding:26px 18px;
+    border-top:0; border-right:1px solid var(--linha); background:var(--fundo)}
+  nav::before{content:"Caixa"; font-size:19px; font-weight:800; color:var(--texto);
+    padding:0 14px 24px}
+  nav button{flex:none; flex-direction:row; gap:12px; justify-content:flex-start;
+    padding:12px 14px; font-size:14px; border-radius:14px}
+  nav button[aria-current="page"]{background:var(--cartao)}
+  nav svg{width:19px; height:19px}
+
+  .topo{padding:28px 0 22px}
+  #btnMenu{display:none}
+
+  .grade{display:grid; grid-template-columns:340px minmax(0,1fr) 400px; gap:20px;
+    align-items:start}
+  .col{display:flex; flex-direction:column; gap:20px; min-width:0}
+  .tela{display:block}
+  .tela{background:var(--cartao); border:1px solid var(--linha); border-radius:24px; padding:22px}
+  .tela > h1{font-size:17px; margin:0 0 14px}
+  .tela > p.rot{margin-top:-8px}
+
+  form{background:var(--cartao2); border-color:transparent}
+  .item{background:var(--cartao2)}
+  .vazio{background:var(--cartao2)}
+
+  /* redundâncias do celular somem: os painéis completos já estão à vista */
+  #tela-resumo .sec, #tela-resumo .atalhoAnalise, .verTodos,
+  #tela-analise .topoTela .iconeBtn, #tela-analise .topoTela .esp{display:none}
+  #tela-resumo{padding-bottom:26px}
+  .saldoVal{font-size:34px}
+  .topoTela{padding:0 0 4px}
+  .chat{max-height:46vh; overflow-y:auto; padding-right:4px}
+  .radar{max-width:320px}
+}
+
+/* ===== dashboard (web) ===== */
+.soDesktop{display:none}
+.lateralAgente{display:none}
+@media (min-width:1100px){
+  body{display:block; padding:0; background:var(--preto); min-height:100vh}
+  .shell{max-width:none; width:auto; height:auto; margin:0 0 0 246px; border-radius:0;
+    overflow:visible; box-shadow:none}
+  .app{max-width:1520px; height:auto; min-height:0; overflow:visible; margin:0 auto;
+    padding:0 32px 48px}
+  .onb,.drawer,.soMobile,#btnMenu{display:none !important}
+  .soDesktop{display:block}
+  .grade{display:block}
+  .col{display:contents}
+
+  /* lateral */
+  nav{position:fixed; left:0; top:0; bottom:0; width:246px; transform:none;
+    flex-direction:column; justify-content:flex-start; gap:6px; padding:24px 16px;
+    border-top:0; border-right:1px solid var(--linha); background:var(--fundo)}
+  nav::before{content:"Caixa"; font-size:19px; font-weight:800; color:var(--texto);
+    padding:6px 14px 26px}
+  nav button{flex:none; flex-direction:row; gap:12px; justify-content:flex-start;
+    padding:13px 14px; font-size:14.5px; border-radius:14px}
+  nav button[aria-current="page"]{background:linear-gradient(100deg,var(--amarelo),var(--amarelo2));
+    color:#101010; font-weight:700}
+  nav svg{width:19px; height:19px}
+  nav button.lateralAgente[aria-current="page"]{background:var(--cartao); color:var(--texto);
+    font-weight:400}
+  .lateralAgente{margin-top:auto; display:flex; align-items:center; gap:11px; text-align:left;
+    background:var(--cartao); border:1px solid var(--linha); border-radius:16px; padding:11px 12px;
+    color:var(--texto)}
+  .lateralAgente .av{width:36px; height:36px; border-radius:50%; background:var(--indigo);
+    display:grid; place-items:center; font-size:12px; font-weight:800; flex:none}
+  .lateralAgente b{display:block; font-size:13.5px; font-weight:600}
+  .lateralAgente i{font-style:normal; font-size:11.5px; color:var(--cinza)}
+
+  /* topo */
+  .topo{padding:22px 0; gap:16px; border-bottom:1px solid var(--linha); margin-bottom:24px}
+  .busca{flex:1; max-width:440px; position:relative; display:flex; align-items:center}
+  .busca svg{position:absolute; left:14px; width:17px; height:17px; stroke:var(--cinza);
+    fill:none; stroke-width:1.8}
+  .busca input{padding:12px 14px 12px 40px; border-radius:14px; background:var(--cartao);
+    border:1px solid var(--linha)}
+  .btnCta{border:0; border-radius:14px; padding:12px 20px; font-weight:700; font-size:14px;
+    background:linear-gradient(100deg,var(--amarelo),var(--amarelo2)); color:#101010}
+
+  /* páginas */
+  .tela{display:none}
+  .tela.on{display:block}
+  .cabPag{margin-bottom:20px}
+  .cabPag h1{font-size:25px; font-weight:800; letter-spacing:-.02em}
+  .cabPag p{margin:4px 0 0; color:var(--cinza); font-size:13.5px}
+  .tela > h1{font-size:25px; font-weight:800; margin-bottom:6px}
+  .tela > p.rot{margin:0 0 20px}
+
+  #tela-resumo.on{display:grid; grid-template-columns:minmax(0,1fr) 384px; gap:22px;
+    align-items:start}
+  #tela-resumo .cabPag{grid-column:1 / -1}
+  .principal,.trilha{display:flex; flex-direction:column; gap:22px; min-width:0}
+
+  .painelSaldo,.painelFluxo,#tela-resumo .sec{background:var(--cartao);
+    border:1px solid var(--linha); border-radius:22px; padding:22px}
+  #tela-resumo .sec{margin:0}
+  .saldoVal{font-size:42px}
+  .acoes{max-width:420px}
+  .chips{display:flex; gap:10px; margin-top:18px}
+  .chip{flex:1; border-radius:14px; padding:12px 14px; border:1px solid}
+  .chip .k{font-size:12px; opacity:.85}
+  .chip .v{font-size:16px; font-weight:800; font-variant-numeric:tabular-nums}
+  .chip.ent{background:rgba(87,191,156,.1); border-color:rgba(87,191,156,.35); color:var(--teal)}
+  .chip.sai{background:rgba(228,115,107,.1); border-color:rgba(228,115,107,.35); color:var(--vermelho)}
+  .fluxo{display:block; width:100%; height:auto}
+
+  #tela-lancamentos,#tela-compromissos,#tela-metas,#tela-analise,#tela-agente{max-width:1100px}
+  form{background:var(--cartao); border-radius:22px}
+  .filtros{display:flex; align-items:center; gap:14px; background:var(--cartao);
+    border:1px solid var(--linha); border-radius:18px; padding:14px 16px; margin-bottom:18px}
+  .filtros .busca{max-width:340px}
+  .filtros .busca input{background:var(--cartao2)}
+  .segmento{margin-left:auto; display:flex; gap:4px; background:var(--cartao2); border-radius:12px;
+    padding:4px}
+  .segmento button{border:0; background:none; padding:8px 16px; border-radius:9px; font-size:13px;
+    font-weight:600; color:var(--cinza)}
+  .segmento button.on{background:linear-gradient(100deg,var(--amarelo),var(--amarelo2)); color:#101010}
+
+  /* tabela */
+  .tabela{width:100%; border-collapse:collapse; background:var(--cartao);
+    border:1px solid var(--linha); border-radius:18px; overflow:hidden}
+  .tabela th{text-align:left; font-size:11.5px; font-weight:700; color:var(--cinza);
+    letter-spacing:.06em; padding:14px 18px; background:var(--cartao2)}
+  .tabela th.dir,.tabela td.dir{text-align:right}
+  .tabela td{padding:14px 18px; border-top:1px solid var(--linha); font-size:14px}
+  .tabela tr:hover td{background:var(--sutil)}
+  .tabela .desc{display:flex; align-items:center; gap:12px; font-weight:600}
+  .setinha{width:30px; height:30px; border-radius:50%; display:grid; place-items:center; flex:none;
+    font-size:13px; font-weight:800}
+  .setinha.ent{background:rgba(87,191,156,.15); color:var(--teal)}
+  .setinha.sai{background:rgba(228,115,107,.15); color:var(--vermelho)}
+  .etiqueta{display:inline-block; font-size:12px; padding:4px 10px; border-radius:8px;
+    background:var(--cartao2); border:1px solid var(--linha); color:var(--cinza)}
+  .tabela .val{font-weight:700; font-variant-numeric:tabular-nums}
+  .tabela .val.ent{color:var(--teal)}
+  .tabela .x{background:none; border:0; color:var(--cinza); font-size:17px; padding:2px 6px;
+    border-radius:8px}
+  .tabela .x:hover{color:var(--texto); background:var(--cartao2)}
+  .tabela .x[data-apagar]:hover{color:var(--vermelho)}
+
+  .chat{max-height:52vh; overflow-y:auto; padding-right:4px}
+  .radar{max-width:340px}
+  .verTodos,#tela-analise .topoTela .iconeBtn,#tela-analise .topoTela .esp{display:none}
+}
