@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "functions": {
+    "api/**/*.ts": { "maxDuration": 15 },
+    "api/agente.ts": { "maxDuration": 30 }
+  }
+}

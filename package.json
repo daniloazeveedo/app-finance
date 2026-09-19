@@ -1,0 +1,13 @@
+{
+  "name": "caixa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Controle financeiro pessoal: front-end estático e API serverless na Vercel.",
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.0"
+  },
+  "devDependencies": {
+    "@vercel/node": "^5.0.0",
+    "typescript": "^5.6.0"
+  }
+}
