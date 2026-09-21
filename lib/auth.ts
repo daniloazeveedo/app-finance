@@ -1,22 +1,12 @@
-/** Dono dos dados da requisição.
- *
- *  Hoje devolve sempre o mesmo usuário, vindo de variável de ambiente.
- *  Quando o login entrar, só este arquivo muda: valide o token aqui e
- *  devolva o id do usuário autenticado. O resto da API não precisa saber
- *  de onde o id veio — todas as consultas já filtram por usuario_id. */
+/** Dono dos dados da requisição — agora vindo da sessão, não de variável
+ *  de ambiente. Toda rota de dados passa por aqui antes de tocar no banco. */
 import type { VercelRequest } from "@vercel/node";
+import { dona } from "./sessao";
 
 export class NaoAutorizado extends Error {}
 
-export function usuarioDa(req: VercelRequest): string {
-  const chaveEsperada = process.env.CHAVE_APP;
-  if (chaveEsperada) {
-    const enviada = req.headers["x-chave"];
-    if (enviada !== chaveEsperada) {
-      throw new NaoAutorizado("Chave ausente ou inválida");
-    }
-  }
-  const usuario = process.env.USUARIO_PADRAO;
-  if (!usuario) throw new NaoAutorizado("USUARIO_PADRAO não configurada");
-  return usuario;
+export async function usuarioDa(req: VercelRequest): Promise<string> {
+  const id = await dona(req);
+  if (!id) throw new NaoAutorizado("sessão ausente ou expirada");
+  return id;
 }

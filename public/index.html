@@ -12,8 +12,37 @@
 <link rel="stylesheet" href="assets/css/estilo.css">
 </head>
 <body>
+<div class="conta oculto" id="conta">
+  <div class="contaCaixa">
+    <h1 class="contaTit">Caixa</h1>
+    <p class="contaSub">Cada pessoa com a sua conta e os seus dados.</p>
+    <div class="contaAbas" id="contaAbas">
+      <button class="on" type="button" data-aba="entrar">Entrar</button>
+      <button type="button" data-aba="criar">Criar conta</button>
+    </div>
+    <form id="formConta" novalidate>
+      <div class="campoConta soCriar oculto">
+        <label for="cNome">Nome</label>
+        <input id="cNome" autocomplete="name" placeholder="Como quer ser chamado">
+      </div>
+      <div class="campoConta">
+        <label for="cEmail">E-mail</label>
+        <input id="cEmail" type="email" autocomplete="email" placeholder="voce@exemplo.com">
+      </div>
+      <div class="campoConta">
+        <label for="cSenha">Senha</label>
+        <input id="cSenha" type="password" autocomplete="current-password" placeholder="mínimo de 8 caracteres">
+      </div>
+      <p class="contaErro oculto" id="contaErro" role="alert"></p>
+      <button class="btn" type="submit" id="btnConta">Entrar</button>
+    </form>
+    <p class="contaNota">Seus dados ficam guardados no servidor e só aparecem para
+      quem entrar com esta conta.</p>
+  </div>
+</div>
+
 <div class="shell">
-<div class="onb" id="onb">
+<div class="onb oculto" id="onb">
   <div class="onbTopo"><h1 class="onbTit">Organize suas<span>Finanças</span></h1></div>
   <div class="onbArte">
     <svg class="arte" viewBox="0 233 430 699" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
@@ -260,16 +289,18 @@
     <span class="av">IA</span>
     <span><b>Agente</b><i>pergunte sobre o seu mês</i></span>
   </button>
+  <button class="lateralSair" id="sairDesk">Sair da conta</button>
 </nav>
 <div class="drawer oculto" id="drawer">
   <div class="drawerPainel">
-    <div class="tit">Caixa</div>
+    <div class="tit" id="quemSou">Caixa</div>
     <button data-tela="resumo">Início</button>
     <button data-tela="lancamentos">Lançar</button>
     <button data-tela="compromissos">Contas</button>
     <button data-tela="metas">Metas</button>
     <button data-tela="analise">Análise</button>
     <button data-tela="agente">Agente</button>
+    <button class="sairItem" id="sairMob">Sair da conta</button>
   </div>
 </div>
 </div>

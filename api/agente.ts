@@ -40,7 +40,7 @@ function turnosDe(corpo: Record<string, unknown>): Turno[] {
 }
 
 export default rota(["POST"], async (req: VercelRequest, res: VercelResponse) => {
-  usuarioDa(req); // mesma porta de entrada das outras rotas
+  await usuarioDa(req); // mesma porta de entrada das outras rotas
 
   const chave = process.env.ANTHROPIC_API_KEY;
   if (!chave) return responde(res, 503, { erro: "agente não configurado neste ambiente" });

@@ -6,7 +6,7 @@ import { rota, responde, corpoDa, idDa } from "../../lib/http";
 import { texto, dinheiro, somenteEnviados } from "../../lib/validacao";
 
 export default rota(["PATCH", "DELETE"], async (req: VercelRequest, res: VercelResponse) => {
-  const usuario = usuarioDa(req);
+  const usuario = await usuarioDa(req);
   const id = idDa(req);
 
   if (req.method === "DELETE") {

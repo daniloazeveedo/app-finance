@@ -9,7 +9,6 @@
 
   window.BancoRemoto = function (opcoes) {
     var base = String(opcoes.url || "").replace(/\/$/, "");
-    var chave = opcoes.chave || "";
     var aoFalhar = opcoes.aoFalhar || function () {};
 
     var cache = { lancamentos: {}, compromissos: {}, metas: {} };
@@ -17,8 +16,7 @@
     var carga = null;
 
     function pedir(metodo, caminho, corpo) {
-      var cfg = { method: metodo, headers: {} };
-      if (chave) cfg.headers["x-chave"] = chave;
+      var cfg = { method: metodo, headers: {}, credentials: "same-origin" };
       if (corpo) {
         cfg.headers["Content-Type"] = "application/json";
         cfg.body = JSON.stringify(corpo);

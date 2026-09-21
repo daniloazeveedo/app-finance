@@ -18,8 +18,9 @@ function cors(req: VercelRequest, res: VercelResponse): boolean {
   if (permitida) {
     res.setHeader("Access-Control-Allow-Origin", permitida);
     res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
     res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-chave");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
     res.setHeader("Access-Control-Max-Age", "86400");
   }
   if (req.method === "OPTIONS") {

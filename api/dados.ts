@@ -7,7 +7,7 @@ import { rota, responde } from "../lib/http";
 import type { Dados } from "../lib/tipos";
 
 export default rota(["GET"], async (req: VercelRequest, res: VercelResponse) => {
-  const usuario = usuarioDa(req);
+  const usuario = await usuarioDa(req);
 
   const [lancamentos, compromissos, metas] = await Promise.all([
     sql`select id, descricao, valor, tipo, categoria, data

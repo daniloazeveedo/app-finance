@@ -6,7 +6,7 @@ import { rota, responde, corpoDa } from "../../lib/http";
 import { texto, dinheiro } from "../../lib/validacao";
 
 export default rota(["POST"], async (req: VercelRequest, res: VercelResponse) => {
-  const usuario = usuarioDa(req);
+  const usuario = await usuarioDa(req);
   const c = corpoDa(req);
 
   const nova = {

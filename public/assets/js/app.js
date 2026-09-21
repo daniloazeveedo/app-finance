@@ -529,30 +529,33 @@
   document.querySelectorAll(".sug").forEach(function(b){
     b.addEventListener("click", function(){ perguntar(b.textContent); }); });
 
-  /* tela inicial */
-  (function(){
-    var onb = el("onb"), visto = false;
-    try { visto = localStorage.getItem("caixa.onb") === "1"; } catch(e){}
-    if (visto){ onb.remove(); return; }
-    if (ehDash()){ onb.remove(); return; }
+  /* tela inicial — aparece a cada abertura, como pedido */
+  var onbPronto = false;
+  function mostraOnboarding(){
+    var onb = el("onb");
+    if (!onb) return;
+    if (ehDash()){ onb.classList.add("oculto"); return; }  // no desktop ela não cabe
+    onb.classList.remove("oculto");
     document.body.classList.add("onbAtivo");
+    if (onbPronto) return;
+    onbPronto = true;
+
     var btn = el("onbBtn"), circ = el("onbCirc"), caixa = btn.parentNode;
     function posiciona(){
-      var c = circ.getBoundingClientRect(), p = caixa.getBoundingClientRect();
-      btn.style.left = (c.left - p.left) + "px";
-      btn.style.top = (c.top - p.top) + "px";
+      var c = circ.getBoundingClientRect(), q = caixa.getBoundingClientRect();
+      btn.style.left = (c.left - q.left) + "px";
+      btn.style.top = (c.top - q.top) + "px";
       btn.style.width = c.width + "px";
       btn.style.height = c.height + "px";
     }
     posiciona();
     window.addEventListener("resize", posiciona);
     btn.addEventListener("click", function(){
-      try { localStorage.setItem("caixa.onb","1"); } catch(e){}
       document.body.classList.remove("onbAtivo");
-      window.removeEventListener("resize", posiciona);
-      onb.remove();
+      onb.classList.add("oculto");
     });
-  })();
+  }
+
 
   /* ligar */
   ligarAtalhos();
@@ -573,6 +576,7 @@
   }
 
   var cfg = window.CAIXA_CONFIG || {};
+  var base = String(cfg.apiUrl || "").replace(/\/$/, "");
   var avisou = false;
   function avisaServidor(e){
     if (avisou) return;
@@ -582,25 +586,121 @@
     console.error("Falha na API:", e);
   }
 
-  conecta("db").then(function(x){
-    if (x) db = x;
-    else if (cfg.apiUrl && window.BancoRemoto)
-      db = window.BancoRemoto({ url: cfg.apiUrl, chave: cfg.chave, aoFalhar: avisaServidor });
-    else db = window.BancoLocal("caixa.dados");
+  /* ---------- conta ---------- */
+  var modoConta = "entrar";
+
+  function erroConta(msg){
+    var p = el("contaErro");
+    p.textContent = msg || "";
+    p.classList.toggle("oculto", !msg);
+  }
+
+  function trocaAba(modo){
+    modoConta = modo;
+    el("contaAbas").querySelectorAll("button").forEach(function(b){
+      b.classList.toggle("on", b.dataset.aba === modo); });
+    document.querySelectorAll(".soCriar").forEach(function(d){
+      d.classList.toggle("oculto", modo !== "criar"); });
+    el("btnConta").textContent = modo === "criar" ? "Criar conta" : "Entrar";
+    el("cSenha").setAttribute("autocomplete",
+      modo === "criar" ? "new-password" : "current-password");
+    erroConta("");
+  }
+
+  function mostraConta(){
+    el("conta").classList.remove("oculto");
+    el("onb").classList.add("oculto");
+    document.body.classList.remove("onbAtivo");
+    setTimeout(function(){ el("cEmail").focus(); }, 60);
+  }
+
+  function pedeConta(caminho, corpo){
+    return fetch(base + caminho, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify(corpo)
+    }).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(j){
+        if (r.ok) return j;
+        throw new Error(j.erro || "não foi possível continuar");
+      });
+    }, function(){ throw new Error("sem resposta do servidor"); });
+  }
+
+  el("contaAbas").addEventListener("click", function(e){
+    var b = e.target.closest("[data-aba]");
+    if (b) trocaAba(b.dataset.aba);
+  });
+
+  el("formConta").addEventListener("submit", function(e){
+    e.preventDefault();
+    erroConta("");
+    var dados = { email: el("cEmail").value.trim(), senha: el("cSenha").value };
+    if (!dados.email || !dados.senha) return erroConta("Preencha e-mail e senha.");
+    if (modoConta === "criar"){
+      dados.nome = el("cNome").value.trim();
+      if (!dados.nome) return erroConta("Diga como quer ser chamado.");
+      if (dados.senha.length < 8) return erroConta("A senha precisa de pelo menos 8 caracteres.");
+    }
+    var botao = el("btnConta"), rotulo = botao.textContent;
+    botao.disabled = true; botao.textContent = "Um instante…";
+    pedeConta(modoConta === "criar" ? "/auth/cadastro" : "/auth/entrar", dados)
+      .then(entrou)
+      .catch(function(err){ erroConta(err.message); })
+      .then(function(){ botao.disabled = false; botao.textContent = rotulo; });
+  });
+
+  function sair(){
+    fetch(base + "/auth/sair", { method:"POST", credentials:"same-origin" })
+      .then(function(){ location.reload(); }, function(){ location.reload(); });
+  }
+  ["sairMob","sairDesk"].forEach(function(id){
+    var b = el(id);
+    if (b) b.addEventListener("click", sair);
+  });
+
+  /* ---------- banco ---------- */
+  var bancoLigado = false;
+  function ligaBanco(x){
+    if (bancoLigado) return;
+    bancoLigado = true;
+    db = x;
     escuta("lancamentos","lanc");
     escuta("compromissos","comp");
     escuta("metas","metas");
+  }
+
+  function entrou(usuario){
+    el("conta").classList.add("oculto");
+    var q = el("quemSou");
+    if (q && usuario && usuario.nome) q.textContent = usuario.nome;
+    ligaBanco(window.BancoRemoto({ url: cfg.apiUrl, aoFalhar: avisaServidor }));
+    mostraOnboarding();
+  }
+
+  conecta("db").then(function(x){
+    if (x){ ligaBanco(x); mostraOnboarding(); return; }   // dentro do Claude
+    if (!base){                                            // sem servidor: só este aparelho
+      ligaBanco(window.BancoLocal("caixa.dados"));
+      mostraOnboarding();
+      return;
+    }
+    fetch(base + "/auth/eu", { credentials: "same-origin" })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(u){ if (u) entrou(u); else mostraConta(); })
+      .catch(function(){ mostraConta(); });
   });
 
   conecta("sample").then(function(x){
     if (x){ sample = x; return; }
-    var url = cfg.agenteUrl || (cfg.apiUrl ? cfg.apiUrl.replace(/\/$/, "") + "/agente" : "");
+    var url = cfg.agenteUrl || (base ? base + "/agente" : "");
     if (!url){ desligaAgente(); avisoAgente(); return; }
     sample = function(turnos, opcoes){
-      var cab = { "Content-Type": "application/json" };
-      if (cfg.chave) cab["x-chave"] = cfg.chave;
       return fetch(url, {
-        method: "POST", headers: cab,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({ messages: turnos }),
         signal: opcoes && opcoes.signal
       }).then(function(r){
@@ -615,7 +715,6 @@
   function avisoAgente(){
     var p = document.querySelector("#tela-agente .aviso");
     if (p) p.textContent = "O agente precisa de um backend que guarde a chave da API. " +
-      "Veja o README: defina agenteUrl em assets/js/config.js apontando para a sua função.";
+      "Veja o README para configurar.";
   }
 })();
-
