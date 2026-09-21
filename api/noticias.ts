@@ -138,8 +138,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if ((req.url || "").includes("?")) {
     res.statusCode = 308; res.setHeader("location", "/api/noticias"); return res.end();
   }
-  if (!process.env.ANTHROPIC_API_KEY)
-    return envia(res, 503, { erro: "Falta configurar ANTHROPIC_API_KEY na Vercel." }, false);
+    if (!process.env.ANTHROPIC_API_KEY) {
+    const parecidas = Object.keys(process.env).filter((k) => /anthropic|claude|api_?key/i.test(k));
+    return envia(res, 503, {
+      erro: "Falta configurar ANTHROPIC_API_KEY na Vercel.",
+      diagnostico: {
+        ambiente: process.env.VERCEL_ENV ?? null,
+        commit: (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7) || null,
+        chaveExisteMasVazia: process.env.ANTHROPIC_API_KEY === "",
+        variaveisParecidas: parecidas
+      }
+    }, false);
+  }
   if (memoria && Date.now() - memoria.t < 25 * 60 * 1000) return envia(res, 200, memoria.corpo, true);
   try {
     const cands = await candidatas();
