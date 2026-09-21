@@ -1,8 +1,2 @@
+*backup*.json
 .DS_Store
-Thumbs.db
-node_modules/
-.vercel
-.env
-.env.*
-!.env.example
-*.log
