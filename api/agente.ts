@@ -55,7 +55,7 @@ export default rota(["POST"], async (req: VercelRequest, res: VercelResponse) =>
       "x-api-key": chave,
       "anthropic-version": "2023-06-01"
     },
-    body: JSON.stringify({ model: modelo, max_tokens: 1000, messages })
+    body: JSON.stringify({ model: modelo, max_tokens: 2000, messages })
   });
 
   if (!r.ok) {

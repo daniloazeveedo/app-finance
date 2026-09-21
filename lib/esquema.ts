@@ -11,6 +11,7 @@ const CONFERE = `
      and to_regclass('public.lancamentos') is not null
      and to_regclass('public.compromissos') is not null
      and to_regclass('public.metas') is not null
+     and to_regclass('public.documentos') is not null
      and not exists (
        select 1 from information_schema.columns
         where table_schema = 'public'
@@ -79,7 +80,17 @@ const PASSOS: string[] = [
 
   `create index if not exists idx_lanc_usuario  on lancamentos  (usuario_id, data desc)`,
   `create index if not exists idx_comp_usuario  on compromissos (usuario_id, vencimento)`,
-  `create index if not exists idx_metas_usuario on metas        (usuario_id, criado_em)`
+  `create index if not exists idx_metas_usuario on metas        (usuario_id, criado_em)`,
+
+  /* Armazenamento do app novo: cada registro é um documento JSON do usuário,
+     numa coleção (lancamentos, contas, metas, limites...). */
+  `create table if not exists documentos (
+     usuario_id     uuid        not null references usuarios(id) on delete cascade,
+     colecao        text        not null,
+     id             text        not null,
+     dados          jsonb       not null,
+     atualizado_em  timestamptz not null default now(),
+     primary key (usuario_id, colecao, id))`
 ];
 
 let pronto: Promise<void> | null = null;
