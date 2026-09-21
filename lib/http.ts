@@ -3,6 +3,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { NaoAutorizado } from "./auth";
 import { DadoInvalido } from "./validacao";
+import { garanteEsquema } from "./esquema";
 
 export type Metodo = "GET" | "POST" | "PATCH" | "DELETE" | "OPTIONS";
 
@@ -65,7 +66,8 @@ export function rota(
       return responde(res, 405, { erro: "método não permitido" });
     }
 
-    try {
+        try {
+      await garanteEsquema();
       await handler(req, res);
     } catch (e) {
       if (e instanceof NaoAutorizado) return responde(res, 401, { erro: "não autorizado" });
