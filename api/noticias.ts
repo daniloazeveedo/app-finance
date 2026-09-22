@@ -1,5 +1,5 @@
 /*
- * Sobra — curadoria de notícias (Vercel Function)
+ * Fôlego — curadoria de notícias (Vercel Function)
  * GET /api/noticias  →  { atualizadoEm, itens: [...] }
  *
  * Lê feeds RSS de veículos brasileiros, pede ao Claude para escolher as mais
@@ -13,7 +13,7 @@
  *
  * Variáveis de ambiente (Vercel → Settings → Environment Variables):
  *   ANTHROPIC_API_KEY  (opcional)     liga a curadoria com IA
- *   SOBRA_MODELO       (opcional)     modelo; padrão claude-haiku-4-5-20251001
+ *   FOLEGO_MODELO       (opcional)     modelo; padrão claude-haiku-4-5-20251001
  */
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createHash } from "crypto";
@@ -28,7 +28,7 @@ const FEEDS = [
 ];
 /* feed oficial do the news (beehiiv): usado só para título, data e link de cada edição */
 const THE_NEWS = "https://rss.beehiiv.com/feeds/j9teVW9Qmi.xml";
-const MODELO = process.env.SOBRA_MODELO || "claude-haiku-4-5-20251001";
+const MODELO = process.env.FOLEGO_MODELO || "claude-haiku-4-5-20251001";
 const TEMAS = ["brasil", "mundo", "economia", "política", "tecnologia", "saúde", "clima", "esporte", "ciência"];
 const ESTILO =
   "Escreva como o the news: português do Brasil, tom leve e descontraído, frases curtas, direto ao ponto, " +
@@ -61,7 +61,7 @@ async function lerFeed(f: { nome: string; url: string; tema?: string }): Promise
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 6000);
   try {
-    const r = await fetch(f.url, { signal: ctrl.signal, headers: { "user-agent": "SobraApp/1.0 (curadoria de noticias)" } });
+    const r = await fetch(f.url, { signal: ctrl.signal, headers: { "user-agent": "FolegoApp/1.0 (curadoria de noticias)" } });
     if (!r.ok) return [];
     const buf = Buffer.from(await r.arrayBuffer());
     const cab = buf.subarray(0, 200).toString("latin1");
@@ -105,7 +105,7 @@ async function curar(cands: Item[]): Promise<any[]> {
     timeZone: "America/Sao_Paulo", day: "numeric", month: "long", year: "numeric"
   });
   const prompt =
-    "Você é o editor da aba news do app Sobra. Hoje é " + hoje + " (horário de Brasília).\n" +
+    "Você é o editor da aba news do app Fôlego. Hoje é " + hoje + " (horário de Brasília).\n" +
     "Das matérias candidatas abaixo, escolha as até 8 mais relevantes para quem mora no Brasil. Critérios: " +
     "impacto em muita gente; peso para economia e bolso (juros, preços, emprego, câmbio, combustível); decisões " +
     "de governo; grandes acontecimentos internacionais. Ignore: notícias locais de pouco alcance (evento de uma " +
