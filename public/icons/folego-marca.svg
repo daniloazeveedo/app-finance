@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Fôlego">
+  <circle cx="50" cy="50" r="34" fill="none" stroke="#1E1C2A" stroke-width="9"/>
+  <path d="M29 55 C36 40, 44 40, 50 50 S 64 60, 71 45" fill="none" stroke="#1E1C2A"
+        stroke-width="9" stroke-linecap="round"/>
+</svg>

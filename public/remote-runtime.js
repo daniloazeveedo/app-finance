@@ -1,5 +1,5 @@
 /*
- * Sobra — motor remoto
+ * Fôlego — motor remoto
  * Faz o app rodar na Vercel com login e dados na nuvem (Neon).
  * Imita a parte do runtime do Claude que o app usa (banco, usuário e IA),
  * então as telas não precisam saber onde os dados moram.
@@ -211,30 +211,32 @@
   /* ---------------- tela de acesso ---------------- */
   var CSS =
     ".acesso{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;" +
-    "padding:24px;background:var(--preto,#0A0C10);overflow-y:auto}" +
+    "padding:24px;background:var(--preto,#14131C);overflow-y:auto}" +
     ".acessoCaixa{width:100%;max-width:380px}" +
     ".acessoMarca{display:flex;align-items:center;gap:12px;margin-bottom:10px}" +
     ".acessoMarca .icone{width:52px;height:52px;border-radius:15px;display:grid;place-items:center;" +
-    "background:linear-gradient(135deg,var(--amarelo,#FFC93C),var(--amarelo2,#FFE27A))}" +
+    "background:linear-gradient(135deg,var(--amarelo,#8C80E6),var(--amarelo2,#A79CF0))}" +
     ".acessoMarca .icone svg{width:34px;height:34px}" +
-    ".acessoMarca b{font-size:34px;font-weight:800;letter-spacing:-.04em;color:var(--texto,#F3F5F8)}" +
-    ".acessoLema{color:var(--cinza,#8B94A5);font-size:14.5px;line-height:1.5;margin:0 0 26px}" +
-    ".acessoAbas{display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--cartao2,#1C212C);margin-bottom:18px}" +
+    ".acessoMarca b{font-size:34px;font-weight:800;letter-spacing:-.04em;color:var(--texto,#F3F1FA)}" +
+    ".acessoLema{color:var(--cinza,#918CA6);font-size:14.5px;line-height:1.5;margin:0 0 26px}" +
+    ".acessoAbas{display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--cartao2,#272336);margin-bottom:18px}" +
     ".acessoAbas button{flex:1;border:0;background:none;border-radius:11px;padding:11px;font:inherit;" +
-    "font-size:14.5px;font-weight:700;color:var(--cinza,#8B94A5)}" +
-    ".acessoAbas button.on{background:var(--cartao,#141821);color:var(--texto,#F3F5F8);box-shadow:0 1px 3px rgba(0,0,0,.2)}" +
-    ".acessoCampo{display:block;font-size:13px;color:var(--cinza,#8B94A5);margin-bottom:14px}" +
+    "font-size:14.5px;font-weight:700;color:var(--cinza,#918CA6)}" +
+    ".acessoAbas button.on{background:var(--cartao,#1E1C2A);color:var(--texto,#F3F1FA);box-shadow:0 1px 3px rgba(0,0,0,.2)}" +
+    ".acessoCampo{display:block;font-size:13px;color:var(--cinza,#918CA6);margin-bottom:14px}" +
     ".acessoCampo input{display:block;width:100%;margin-top:6px;padding:14px 15px;border-radius:13px;font:inherit;" +
-    "font-size:16px;color:var(--texto,#F3F5F8);background:var(--cartao,#141821);border:1px solid var(--linha,#262C38)}" +
-    ".acessoCampo input:focus{outline:2px solid var(--acento,#FFC93C);outline-offset:1px}" +
+    "font-size:16px;color:var(--texto,#F3F1FA);background:var(--cartao,#1E1C2A);border:1px solid var(--linha,#332F47)}" +
+    ".acessoCampo input:focus{outline:2px solid var(--acento,#8C80E6);outline-offset:1px}" +
     ".acessoErro{min-height:20px;margin:0 0 10px;font-size:13.5px;color:var(--vermelho,#F86A6A)}" +
     ".acessoBtn{width:100%;border:0;border-radius:14px;padding:15px;font:inherit;font-size:15.5px;font-weight:800;" +
-    "color:#12151C;background:linear-gradient(100deg,var(--amarelo,#FFC93C),var(--amarelo2,#FFE27A))}" +
+    "color:#1E1C2A;background:linear-gradient(100deg,var(--amarelo,#8C80E6),var(--amarelo2,#A79CF0))}" +
     ".acessoBtn:disabled{opacity:.6}" +
-    ".acessoNota{margin-top:18px;font-size:12.5px;line-height:1.5;color:var(--cinza,#8B94A5);text-align:center}" +
-    ".acessoCarregando{color:var(--cinza,#8B94A5);font-size:14px;text-align:center}";
-  var MARCA = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M46 54V20A34 34 0 1 0 80 54Z" fill="#12151C"/>' +
-    '<path d="M53 47V13A34 34 0 0 1 87 47Z" fill="#12151C"/></svg>';
+    ".acessoNota{margin-top:18px;font-size:12.5px;line-height:1.5;color:var(--cinza,#918CA6);text-align:center}" +
+    ".acessoCarregando{color:var(--cinza,#918CA6);font-size:14px;text-align:center}";
+  var MARCA = '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+    '<circle cx="50" cy="50" r="34" fill="none" stroke="#1E1C2A" stroke-width="9"/>' +
+    '<path d="M29 55 C36 40, 44 40, 50 50 S 64 60, 71 45" fill="none" stroke="#1E1C2A" ' +
+    'stroke-width="9" stroke-linecap="round"/></svg>';
   var modo = "entrar", caixa = null;
 
   function monta() {
@@ -245,8 +247,8 @@
     caixa.setAttribute("role", "dialog"); caixa.setAttribute("aria-modal", "true"); caixa.setAttribute("aria-labelledby", "acessoTit");
     caixa.innerHTML =
       '<div class="acessoCaixa">' +
-      '<div class="acessoMarca"><span class="icone">' + MARCA + '</span><b id="acessoTit">sobra</b></div>' +
-      '<p class="acessoLema">Seu mês em uma tela: o que entra, o que já tem dono e o que sobra.</p>' +
+      '<div class="acessoMarca"><span class="icone">' + MARCA + '</span><b id="acessoTit">fôlego</b></div>' +
+      '<p class="acessoLema">Ganhe fôlego no fim do mês: veja o que entra, o que já tem dono e o que sobra.</p>' +
       '<div id="acessoCorpo"><p class="acessoCarregando">Abrindo\u2026</p></div></div>';
     document.body.appendChild(caixa);
     return caixa;

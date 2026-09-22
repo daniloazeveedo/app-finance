@@ -1,8 +1,8 @@
-/* Sobra — service worker
+/* Fôlego — service worker
  * Guarda a casca do app para abrir rápido e sem internet.
  * Nunca guarda dados de login nem da conta: tudo em /api vai direto ao servidor,
  * menos as notícias, que ficam salvas para ler offline. */
-var VERSAO = "sobra-v4";
+var VERSAO = "folego-v5";
 var BASE = ["/", "/remote-runtime.js", "/manifest.webmanifest",
   "/icons/icon-180.png", "/icons/icon-192.png", "/icons/icon-512.png"];
 
