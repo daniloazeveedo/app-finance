@@ -7,21 +7,27 @@
  * A resposta fica 30 min no cache da CDN da Vercel: no máximo ~48 chamadas
  * à IA por dia, não importa quantas pessoas abram o app.
  *
+ * Sem chave da API (ou sem crédito), funciona do mesmo jeito em "modo manchetes":
+ * títulos e resumos curtos publicados pelos próprios jornais, com link, mais as
+ * edições do the news como cartões que abrem no site deles.
+ *
  * Variáveis de ambiente (Vercel → Settings → Environment Variables):
- *   ANTHROPIC_API_KEY  (obrigatória)  chave da API do Claude
+ *   ANTHROPIC_API_KEY  (opcional)     liga a curadoria com IA
  *   SOBRA_MODELO       (opcional)     modelo; padrão claude-haiku-4-5-20251001
  */
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createHash } from "crypto";
 
 const FEEDS = [
-  { nome: "g1", url: "https://g1.globo.com/rss/g1/" },
-  { nome: "g1", url: "https://g1.globo.com/rss/g1/economia/" },
-  { nome: "Agência Brasil", url: "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml" },
-  { nome: "BBC News Brasil", url: "https://feeds.bbci.co.uk/portuguese/rss.xml" },
-  { nome: "InfoMoney", url: "https://www.infomoney.com.br/feed/" },
-  { nome: "CNN Brasil", url: "https://www.cnnbrasil.com.br/feed/" }
+  { nome: "g1", url: "https://g1.globo.com/rss/g1/", tema: "brasil" },
+  { nome: "g1", url: "https://g1.globo.com/rss/g1/economia/", tema: "economia" },
+  { nome: "Agência Brasil", url: "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml", tema: "brasil" },
+  { nome: "BBC News Brasil", url: "https://feeds.bbci.co.uk/portuguese/rss.xml", tema: "mundo" },
+  { nome: "InfoMoney", url: "https://www.infomoney.com.br/feed/", tema: "economia" },
+  { nome: "CNN Brasil", url: "https://www.cnnbrasil.com.br/feed/", tema: "brasil" }
 ];
+/* feed oficial do the news (beehiiv): usado só para título, data e link de cada edição */
+const THE_NEWS = "https://rss.beehiiv.com/feeds/j9teVW9Qmi.xml";
 const MODELO = process.env.SOBRA_MODELO || "claude-haiku-4-5-20251001";
 const TEMAS = ["brasil", "mundo", "economia", "política", "tecnologia", "saúde", "clima", "esporte", "ciência"];
 const ESTILO =
@@ -49,9 +55,9 @@ function tag(xml: string, nome: string): string {
   return m ? limpa(m[1]) : "";
 }
 
-interface Item { fonte: string; titulo: string; resumo: string; url: string; data: string; t?: number }
+interface Item { fonte: string; tema: string; titulo: string; resumo: string; url: string; data: string; t?: number }
 
-async function lerFeed(f: { nome: string; url: string }): Promise<Item[]> {
+async function lerFeed(f: { nome: string; url: string; tema?: string }): Promise<Item[]> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 6000);
   try {
@@ -63,6 +69,7 @@ async function lerFeed(f: { nome: string; url: string }): Promise<Item[]> {
     const xml = buf.toString(latin ? "latin1" : "utf8");
     return xml.split(/<item[\s>]/i).slice(1).map((b) => ({
       fonte: f.nome,
+      tema: f.tema || "brasil",
       titulo: tag(b, "title"),
       resumo: tag(b, "description").slice(0, 300),
       url: tag(b, "link") || tag(b, "guid"),
@@ -83,6 +90,7 @@ async function candidatas(): Promise<(Item & { t: number })[]> {
     .map((i) => ({ ...i, t: new Date(i.data).getTime() }))
     .filter((i) => !isNaN(i.t) && i.t >= limite && i.t <= Date.now() + 3600 * 1000)
     .filter((i) => !/especial[\s_-]*publicit/i.test(i.url + " " + i.titulo))
+    .filter((i) => !/^https:\/\/g1\.globo\.com\/[a-z]{2}\//i.test(i.url))   /* g1 regional */
     .sort((a, b) => b.t - a.t)
     .filter((i) => {
       const k = i.titulo.toLowerCase().slice(0, 60);
@@ -125,6 +133,49 @@ async function curar(cands: Item[]): Promise<any[]> {
   return Array.isArray(json.itens) ? json.itens : [];
 }
 
+const idDe = (url: string) => "n-" + createHash("sha1").update(url).digest("hex").slice(0, 16);
+
+/* Sem IA: manchetes como os próprios jornais publicam, no máximo 3 por veículo. */
+function manchetes(cands: (Item & { t: number })[], agora: string) {
+  const porFonte: Record<string, number> = {};
+  const itens: any[] = [];
+  for (const c of cands) {
+    if ((porFonte[c.fonte] ?? 0) >= 3) continue;
+    porFonte[c.fonte] = (porFonte[c.fonte] ?? 0) + 1;
+    const resumo = c.resumo.length > 220 ? c.resumo.slice(0, 217).replace(/\s+\S*$/, "") + "…" : c.resumo;
+    itens.push({
+      id: idDe(c.url), titulo: c.titulo.slice(0, 160),
+      texto: resumo || "Toque em ler para ver a matéria completa.",
+      tema: c.tema, emoji: "", relevancia: 3, fonte: c.fonte, url: c.url,
+      quando: new Date(c.t).toISOString(), entrou: agora, origem: "manchete"
+    });
+    if (itens.length >= 12) break;
+  }
+  return itens;
+}
+
+/* Edições do the news: só título, data e link. O conteúdo é deles e abre no site deles. */
+async function edicoesTheNews(agora: string) {
+  const lista = await lerFeed({ nome: "the news", url: THE_NEWS, tema: "the news" });
+  const limite = Date.now() - 3 * 86400 * 1000;
+  return lista
+    .map((i) => ({ ...i, t: new Date(i.data).getTime() }))
+    .filter((i) => !isNaN(i.t) && i.t >= limite)
+    .slice(0, 4)
+    .map((i) => {
+      const noite = /^night/i.test(i.titulo), manha = /^\d{2}\/\d{2}/.test(i.titulo);
+      return {
+      id: idDe(i.url),
+      titulo: noite ? "the news " + i.titulo.toLowerCase()
+        : manha ? "the news · edição de " + i.titulo.slice(0, 5) : "the news · " + i.titulo.toLowerCase(),
+      texto: (noite ? "A edição da noite" : manha ? "A edição da manhã" : "Uma edição especial") +
+        " do the news. Toque em ler para abrir no site deles.",
+      tema: "the news", emoji: "☕", relevancia: 3, fonte: "the news", url: i.url,
+      quando: new Date(i.t).toISOString(), entrou: agora, origem: "the news"
+      };
+    });
+}
+
 function envia(res: VercelResponse, status: number, corpo: unknown, cache: boolean): void {
   res.statusCode = status;
   res.setHeader("content-type", "application/json; charset=utf-8");
@@ -138,24 +189,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if ((req.url || "").includes("?")) {
     res.statusCode = 308; res.setHeader("location", "/api/noticias"); return res.end();
   }
-    if (!process.env.ANTHROPIC_API_KEY) {
-    const parecidas = Object.keys(process.env).filter((k) => /anthropic|claude|api_?key/i.test(k));
-    return envia(res, 503, {
-      erro: "Falta configurar ANTHROPIC_API_KEY na Vercel.",
-      diagnostico: {
-        ambiente: process.env.VERCEL_ENV ?? null,
-        commit: (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7) || null,
-        chaveExisteMasVazia: process.env.ANTHROPIC_API_KEY === "",
-        variaveisParecidas: parecidas
-      }
-    }, false);
-  }
-  if (memoria && Date.now() - memoria.t < 25 * 60 * 1000) return envia(res, 200, memoria.corpo, true);
+    if (memoria && Date.now() - memoria.t < 25 * 60 * 1000) return envia(res, 200, memoria.corpo, true);
+  const agora = new Date().toISOString();
+  let cands: (Item & { t: number })[] = [];
+  let theNews: any[] = [];
   try {
-    const cands = await candidatas();
-    if (!cands.length) throw new Error("nenhum feed respondeu com notícias recentes");
+    [cands, theNews] = await Promise.all([candidatas(), edicoesTheNews(agora).catch(() => [])]);
+    if (!cands.length && !theNews.length) throw new Error("nenhum feed respondeu com notícias recentes");
+    if (!process.env.ANTHROPIC_API_KEY) throw new Error("sem chave da API: modo manchetes");
     const escolhidas = await curar(cands);
-    const agora = new Date().toISOString();
     const ids = new Set();
     const itens = escolhidas.slice(0, 8).map((x: any) => {
       const c = cands[Number(x && x.i)];
@@ -178,12 +220,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       };
     }).filter(Boolean);
     if (!itens.length) throw new Error("a IA não escolheu nenhuma notícia");
-    const corpo = { atualizadoEm: agora, itens };
+    const corpo = { atualizadoEm: agora, modo: "curadoria", itens: itens.concat(theNews) };
     memoria = { t: Date.now(), corpo };
     return envia(res, 200, corpo, true);
   } catch (e: any) {
-    console.error("[noticias]", e && e.message);
+    console.warn("[noticias]", e && e.message);
     if (memoria) return envia(res, 200, memoria.corpo, true);
-    return envia(res, 502, { erro: "Não deu para montar as notícias agora." }, false);
+    const itens = manchetes(cands, agora).concat(theNews);
+    if (!itens.length) return envia(res, 502, { erro: "Não deu para montar as notícias agora." }, false);
+    const corpo = { atualizadoEm: agora, modo: "manchetes", itens };
+    memoria = { t: Date.now(), corpo };
+    return envia(res, 200, corpo, true);
   }
 }
